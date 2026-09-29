@@ -27,7 +27,7 @@ public class EmailService {
 
         properties.put(
                 "mail.smtp.port",
-                "587"
+                "2525"
         );
 
         properties.put(
