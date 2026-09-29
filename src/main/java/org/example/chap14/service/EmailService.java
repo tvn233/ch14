@@ -14,6 +14,9 @@ public class EmailService {
         String apiKey = System.getenv("BREVO_API_KEY");
         String from = System.getenv("SMTP_FROM");
 
+        System.out.println("BREVO TO: [" + to + "]");
+        System.out.println("BREVO FROM: [" + from + "]");
+
         String body =
                 "{"
                         + "\"sender\":{"
