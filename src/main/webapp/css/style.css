@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 30px;
+}
+
+h1 {
+    color: teal;
+    font-size: 36px;
+}
+
+p {
+    font-size: 18px;
+}
+
+.form-row {
+    margin-bottom: 8px;
+}
+
+.form-row label {
+    display: inline-block;
+    width: 115px;
+    font-size: 18px;
+}
+
+.form-row input {
+    width: 250px;
+    height: 22px;
+    font-size: 16px;
+}
+
+button {
+    margin-left: 118px;
+    font-size: 16px;
+}
+
+.error {
+    color: red;
+    font-style: italic;
+}
