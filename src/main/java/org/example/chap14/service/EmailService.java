@@ -1,90 +1,79 @@
 package org.example.chap14.service;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
-import java.util.Properties;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class EmailService {
 
-    public void sendEmail(
-            String to,
-            String firstName)
-            throws MessagingException {
+    public void sendEmail(String to, String firstName)
+            throws IOException, InterruptedException {
 
-
+        String apiKey = System.getenv("BREVO_API_KEY");
         String from = System.getenv("SMTP_FROM");
-        String username = System.getenv("SMTP_USERNAME");
-        String password = System.getenv("SMTP_PASSWORD");
-
-        Properties properties = new Properties();
-
-        properties.put(
-                "mail.smtp.host",
-                "smtp-relay.brevo.com"
-        );
-
-        properties.put(
-                "mail.smtp.port",
-                "2525"
-        );
-
-        properties.put(
-                "mail.smtp.auth",
-                "true"
-        );
-
-        properties.put(
-                "mail.smtp.starttls.enable",
-                "true"
-        );
-
-        Session session =
-                Session.getInstance(
-                        properties,
-                        new Authenticator() {
-
-                            @Override
-                            protected PasswordAuthentication
-                            getPasswordAuthentication() {
-
-                                return new PasswordAuthentication(
-                                        username,
-                                        password
-                                );
-                            }
-                        }
-                );
-
-        Message message =
-                new MimeMessage(session);
-
-        message.setFrom(
-                new InternetAddress(from)
-        );
-
-        message.setRecipients(
-                Message.RecipientType.TO,
-                InternetAddress.parse(to)
-        );
-
-        message.setSubject(
-                "Welcome to our email list"
-        );
 
         String body =
-                "Dear " + firstName + ",\n\n"
-                        + "Thanks for joining our email list. "
-                        + "We'll make sure to send you "
-                        + "announcements about new products "
-                        + "and promotions.\n\n"
-                        + "Have a great day and thanks again!\n\n"
-                        + "Kelly Slivkoff\n"
-                        + "Mike Murach & Associates";
+                "{"
+                        + "\"sender\":{"
+                        + "\"email\":\"" + escapeJson(from) + "\""
+                        + "},"
+                        + "\"to\":[{"
+                        + "\"email\":\"" + escapeJson(to) + "\""
+                        + "}],"
+                        + "\"subject\":\"Welcome to our email list\","
+                        + "\"textContent\":\""
+                        + escapeJson(
+                        "Dear " + firstName + ",\n\n"
+                                + "Thanks for joining our email list. "
+                                + "We'll make sure to send you "
+                                + "announcements about new products "
+                                + "and promotions.\n\n"
+                                + "Have a great day and thanks again!\n\n"
+                                + "Kelly Slivkoff\n"
+                                + "Mike Murach & Associates"
+                )
+                        + "\""
+                        + "}";
 
-        message.setText(body);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                .header("accept", "application/json")
+                .header("api-key", apiKey)
+                .header("content-type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
 
-        Transport.send(message);
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpResponse<String> response =
+                client.send(
+                        request,
+                        HttpResponse.BodyHandlers.ofString()
+                );
+
+        if (response.statusCode() < 200
+                || response.statusCode() >= 300) {
+
+            throw new IOException(
+                    "Brevo API error: HTTP "
+                            + response.statusCode()
+                            + " - "
+                            + response.body()
+            );
+        }
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r");
     }
 }
