@@ -19,11 +19,15 @@ public class JPAUtil {
         String dbPassword = System.getenv("DB_PASSWORD");
 
         if (dbUrl != null && !dbUrl.isBlank()) {
+
+            if (dbUrl.startsWith("postgresql://")) {
+                dbUrl = "jdbc:" + dbUrl;
+            }
+
             properties.put("jakarta.persistence.jdbc.url", dbUrl);
             properties.put("jakarta.persistence.jdbc.user", dbUsername);
             properties.put("jakarta.persistence.jdbc.password", dbPassword);
         }
-
         emf = Persistence.createEntityManagerFactory("ch14PU", properties);
     }
 
