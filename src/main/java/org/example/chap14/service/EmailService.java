@@ -47,11 +47,27 @@ public class EmailService {
 
         HttpClient client = HttpClient.newHttpClient();
 
+        long start = System.currentTimeMillis();
+
         HttpResponse<String> response =
                 client.send(
                         request,
                         HttpResponse.BodyHandlers.ofString()
                 );
+
+        long end = System.currentTimeMillis();
+
+        System.out.println(
+                "BREVO API TIME: " + (end - start) + " ms"
+        );
+
+        System.out.println(
+                "BREVO STATUS: " + response.statusCode()
+        );
+
+        System.out.println(
+                "BREVO RESPONSE: " + response.body()
+        );
 
         if (response.statusCode() < 200
                 || response.statusCode() >= 300) {
